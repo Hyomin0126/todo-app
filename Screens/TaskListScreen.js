@@ -1,34 +1,248 @@
-import { Text, View, StyleSheet } from "react-native";
-import React, { useContext } from "react";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  Alert,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+} from "react-native";
+import React, { useState, useContext } from "react";
 import TodosContext from "../Components/TodosProvider";
+import { ListItem, Icon } from "@rneui/themed";
 
-const TaskListScreen = ({ route }) => {
-  const { todos } = useContext(TodosContext);
+const TodoListItem = ({ todo, onModifyTodo, onRemoveTodo }) => {
+  return (
+    <View
+      style={{
+        marginVertical: 5,
+        marginHorizontal: 10,
+        borderWidth: 2,
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+    >
+      <ListItem.Swipeable
+        bottomDivider
+        style={styles.listBox}
+        leftContent={(reset) => (
+          <Pressable
+            style={{ ...styles.pressableBtn, backgroundColor: "blue" }}
+            onPress={() => onModifyTodo(todo, reset)}
+          >
+            <Icon name="edit" color="white" />
+            <Text style={styles.btnText}>Edit</Text>
+          </Pressable>
+        )}
+        rightContent={(reset) => (
+          <Pressable
+            style={{ ...styles.pressableBtn, backgroundColor: "red" }}
+            onPress={() => onRemoveTodo(todo.id, reset)}
+          >
+            <Icon name="delete" color="white" />
+            <Text style={styles.btnText}>Delete</Text>
+          </Pressable>
+        )}
+      >
+        <ListItem.Content>
+          <ListItem.Title>No: {todo.id}</ListItem.Title>
+          <ListItem.Subtitle>Date: {todo.regDate}</ListItem.Subtitle>
+          <ListItem.Subtitle>Task: {todo.content}</ListItem.Subtitle>
+        </ListItem.Content>
+      </ListItem.Swipeable>
+    </View>
+  );
+};
+
+const TodoModifytModal = ({
+  modalVisible,
+  setModalVisible,
+  modifiedContent,
+  setModifiedContent,
+  onModifyTodo,
+  closeModal,
+}) => {
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => {
+        setModalVisible(!modalVisible);
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalContainer}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{
+              width: "100%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Pressable style={styles.modalBox}>
+              <View style={styles.modalInner}>
+                <View style={{ flexGrow: 1 }}>
+                  <TextInput
+                    multiline
+                    style={styles.modalInput}
+                    placeholder="Please write your task to edit"
+                    placeholderTextColor="gray"
+                    value={modifiedContent}
+                    onChangeText={setModifiedContent}
+                  />
+                </View>
+                <View style={styles.modalBtnBox}>
+                  <TouchableOpacity onPress={onModifyTodo}>
+                    <Text style={styles.modalBtnText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={closeModal}>
+                    <Text style={styles.modalBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Pressable>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
+};
+
+const TaskListScreen = () => {
+  const { todos, removeTodo, modifyTodo } = useContext(TodosContext);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTodoId, setSelectedTodoId] = useState(null);
+  const [modifiedContent, setModifiedContent] = useState("");
+
+  const openMoifyModal = (todo, reset) => {
+    setSelectedTodoId(todo.id);
+    setModifiedContent(todo.content);
+    reset();
+    setModalVisible(true);
+  };
+  const handleModifyTodo = () => {
+    if (selectedTodoId !== null) {
+      modifyTodo(selectedTodoId, modifiedContent);
+    }
+    setModifiedContent(null);
+    setModalVisible(false);
+  };
+
+  const closeModal = () => {
+    setModifiedContent(modifiedContent);
+    setModalVisible(false);
+  };
+
+  const handelRemoveTodo = (id, reset) => {
+    Alert.alert(
+      "Delete Task",
+      "Do you want to delete this task?",
+      [
+        {
+          text: "Delete",
+          onPress: () => {
+            removeTodo(id);
+            reset();
+          },
+          style: "destructive",
+        },
+        {
+          text: "Cancel",
+          onPress: () => reset(),
+          style: "cancel",
+        },
+      ],
+      {
+        //Android
+        cancelable: true,
+        onDismiss: () => reset(),
+      }
+    );
+  };
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+    <View style={styles.taskListContaioner}>
       {todos.length > 0 ? (
-        todos.map((todo) => (
-          <View key={todo.id} style={styles.listBox}>
-            <Text>No: {todo.id}</Text>
-            <Text>Date: {todo.regDate}</Text>
-            <Text>Task: {todo.content}</Text>
-          </View>
-        ))
+        <FlatList
+          data={todos}
+          renderItem={({ item }) => (
+            <TodoListItem
+              todo={item}
+              onModifyTodo={openMoifyModal}
+              onRemoveTodo={handelRemoveTodo}
+            />
+          )}
+          keyExtractor={(item) => item.id.toString()}
+        />
       ) : (
         <Text style={{ fontSize: 20, fontWeight: "bold" }}>Nothing to do</Text>
       )}
+      <TodoModifytModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        modifiedContent={modifiedContent}
+        setModifiedContent={setModifiedContent}
+        onModifyTodo={handleModifyTodo}
+        closeModal={closeModal}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  listBox: {
-    borderWidth: 2,
-    width: "90%",
-    padding: 10,
+  taskListContaioner: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  listBox: {},
+  pressableBtn: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  btnText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalInner: {
+    flex: 1,
+  },
+  modalBox: {
+    width: "80%",
+    minHeight: 250,
+    borderWidth: 3,
     borderRadius: 10,
-    marginTop: 5,
+    backgroundColor: "#fff",
+  },
+  modalInput: {
+    padding: 10,
+    fontSize: 15,
+  },
+  modalBtnBox: {
+    height: 60,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 15,
+    paddingRight: 20,
+  },
+  modalBtnText: {
+    fontSize: 15,
+    fontWeight: "bold",
   },
 });
 
