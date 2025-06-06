@@ -11,7 +11,7 @@ import MyPageScreen from "../Screens/MyPageScreen";
 const tabConfig = [
   {
     name: "Home",
-    title: "Main",
+    title: "Home",
     component: HomeScreen,
     focuedIcon: "home",
     unfocusedIcon: "home-outline",

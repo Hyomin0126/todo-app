@@ -12,12 +12,24 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  Dimensions,
+  ScrollView,
 } from "react-native";
 import React, { useState, useContext } from "react";
 import TodosContext from "../Components/TodosProvider";
 import { ListItem, Icon } from "@rneui/themed";
+import AppLoadingContext from "../Components/AppLoadingProvider";
+
+const { width, height } = Dimensions.get("window");
 
 const TodoListItem = ({ todo, onModifyTodo, onRemoveTodo }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { fontsLoaded } = useContext(AppLoadingContext);
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <View
       style={{
@@ -52,8 +64,12 @@ const TodoListItem = ({ todo, onModifyTodo, onRemoveTodo }) => {
       >
         <ListItem.Content>
           <ListItem.Title>No: {todo.id}</ListItem.Title>
-          <ListItem.Subtitle>Date: {todo.regDate}</ListItem.Subtitle>
-          <ListItem.Subtitle>Task: {todo.content}</ListItem.Subtitle>
+          <Text>Date: {todo.regDate}</Text>
+          <Pressable onPress={toggleExpand} style={styles.contentBox}>
+            <Text numberOfLines={isExpanded ? null : 2} ellipsizeMode="tail">
+              Task: {todo.content}
+            </Text>
+          </Pressable>
         </ListItem.Content>
       </ListItem.Swipeable>
     </View>
@@ -89,24 +105,23 @@ const TodoModifytModal = ({
           >
             <Pressable style={styles.modalBox}>
               <View style={styles.modalInner}>
-                <View style={{ flexGrow: 1 }}>
-                  <TextInput
-                    multiline
-                    style={styles.modalInput}
-                    placeholder="Please write your task to edit"
-                    placeholderTextColor="gray"
-                    value={modifiedContent}
-                    onChangeText={setModifiedContent}
-                  />
-                </View>
-                <View style={styles.modalBtnBox}>
-                  <TouchableOpacity onPress={onModifyTodo}>
-                    <Text style={styles.modalBtnText}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={closeModal}>
-                    <Text style={styles.modalBtnText}>Cancel</Text>
-                  </TouchableOpacity>
-                </View>
+                <TextInput
+                  multiline
+                  maxLength={200}
+                  style={styles.modalInput}
+                  placeholder="Please write your task to edit"
+                  placeholderTextColor="gray"
+                  value={modifiedContent}
+                  onChangeText={setModifiedContent}
+                />
+              </View>
+              <View style={styles.modalBtnBox}>
+                <TouchableOpacity onPress={onModifyTodo}>
+                  <Text style={styles.modalBtnText}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={closeModal}>
+                  <Text style={styles.modalBtnText}>Cancel</Text>
+                </TouchableOpacity>
               </View>
             </Pressable>
           </KeyboardAvoidingView>
@@ -122,7 +137,7 @@ const TaskListScreen = () => {
   const [selectedTodoId, setSelectedTodoId] = useState(null);
   const [modifiedContent, setModifiedContent] = useState("");
 
-  const openMoifyModal = (todo, reset) => {
+  const openModifyModal = (todo, reset) => {
     setSelectedTodoId(todo.id);
     setModifiedContent(todo.content);
     reset();
@@ -176,7 +191,7 @@ const TaskListScreen = () => {
           renderItem={({ item }) => (
             <TodoListItem
               todo={item}
-              onModifyTodo={openMoifyModal}
+              onModifyTodo={openModifyModal}
               onRemoveTodo={handelRemoveTodo}
             />
           )}
@@ -218,22 +233,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  modalInner: {
-    flex: 1,
-  },
   modalBox: {
-    width: "80%",
-    minHeight: 250,
+    backgroundColor: "#fff",
     borderWidth: 3,
     borderRadius: 10,
-    backgroundColor: "#fff",
+  },
+  modalInner: {
+    flex: 0.1,
+    width: width * 0.8,
+    minHeight: height * 0.3,
   },
   modalInput: {
     padding: 10,
     fontSize: 15,
+    fontFamily: "customFont",
   },
   modalBtnBox: {
-    height: 60,
+    paddingVertical: 10,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
@@ -241,8 +257,9 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   modalBtnText: {
-    fontSize: 15,
+    fontSize: 20,
     fontWeight: "bold",
+    fontFamily: "customFont",
   },
 });
 
