@@ -1,7 +1,9 @@
-export function dateToStr(d) {
+export function dateToStr(d, format) {
   const pad = (n) => {
     return n < 10 ? "0" + n : n;
   };
+  const weekdayString = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
   const monthString = [
     "Jan",
     "Feb",
@@ -16,8 +18,12 @@ export function dateToStr(d) {
     "Nov",
     "Dec",
   ];
+  const dayOfWeek = weekdayString[d.getDay()];
   const currentMonth = d.getMonth();
   const currentMonthString = monthString[currentMonth];
+  if (format === "weekday") {
+    return `${dayOfWeek}, ${currentMonthString} ${pad(d.getDate())}`;
+  }
 
   return (
     currentMonthString +

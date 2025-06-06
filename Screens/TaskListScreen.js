@@ -198,7 +198,13 @@ const TaskListScreen = () => {
           keyExtractor={(item) => item.id.toString()}
         />
       ) : (
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>Nothing to do</Text>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+            Nothing to do
+          </Text>
+        </View>
       )}
       <TodoModifytModal
         modalVisible={modalVisible}

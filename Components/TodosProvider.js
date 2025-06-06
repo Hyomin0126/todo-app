@@ -5,11 +5,11 @@ import testTodosData from "./TestTodosData";
 const TodosContext = createContext();
 
 export const TodosProvider = ({ children }) => {
-  // const [todos, setTodos] = useState([]);
-  // const lastTodoIdRef = useRef(0);
+  const [todos, setTodos] = useState([]);
+  const lastTodoIdRef = useRef(0);
 
-  const [todos, setTodos] = useState([...testTodosData]);
-  const lastTodoIdRef = useRef(testTodosData.length);
+  // const [todos, setTodos] = useState([...testTodosData]);
+  // const lastTodoIdRef = useRef(testTodosData.length);
 
   const addTodo = (newContent) => {
     const id = ++lastTodoIdRef.current;

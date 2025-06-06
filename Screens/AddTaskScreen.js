@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useContext, useState } from "react";
 import TodosContext from "../Components/TodosProvider";
@@ -31,37 +33,41 @@ const AddTaskScreen = ({ navigation }) => {
 
   return (
     <>
-      <View style={styles.inputBox}>
-        <TextInput
-          multiline
-          onChangeText={setTodo}
-          value={todo}
-          placeholder="Please write your task"
-          style={styles.textInput}
-        />
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 5,
-          justifyContent: "center",
-          marginLeft: 10,
-          marginRight: 10,
-        }}
-      >
-        <Pressable style={styles.presseableBtn} onPress={handleAddTodo}>
-          <Text style={styles.text}>Add</Text>
-        </Pressable>
-        <Pressable
-          style={styles.presseableBtn}
-          onPress={() => {
-            navigation.navigate("Home");
-            setTodo("");
-          }}
-        >
-          <Text style={styles.text}>Cancel</Text>
-        </Pressable>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
+          <View style={styles.inputBox}>
+            <TextInput
+              multiline
+              onChangeText={setTodo}
+              value={todo}
+              placeholder="Please write your task"
+              style={styles.textInput}
+            />
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 5,
+              justifyContent: "center",
+              marginLeft: 10,
+              marginRight: 10,
+            }}
+          >
+            <Pressable style={styles.presseableBtn} onPress={handleAddTodo}>
+              <Text style={styles.text}>Add</Text>
+            </Pressable>
+            <Pressable
+              style={styles.presseableBtn}
+              onPress={() => {
+                navigation.navigate("Home");
+                setTodo("");
+              }}
+            >
+              <Text style={styles.text}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </>
   );
 };
@@ -76,6 +82,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   textInput: {
+    flex: 1,
     fontSize: 20,
     fontWeight: "bold",
     fontFamily: "customFont",
